@@ -2,6 +2,8 @@ package com.example.batteries.controllers;
 
 import com.example.batteries.dto.BatteriesWithinPostcodeRangeDto;
 import com.example.batteries.dto.BatteryDto;
+import com.example.batteries.dto.GetResponseDto;
+import com.example.batteries.dto.PostResponseDto;
 import com.example.batteries.entities.Battery;
 import com.example.batteries.services.BatteryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +24,14 @@ public class BatteryController {
     @PostMapping(value = "/add-info", consumes = {"application/json"}, produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public ResponseEntity<List<BatteryDto>> addBattery(@RequestBody List<Battery> batteries) {
+    public ResponseEntity<PostResponseDto> addBattery(@RequestBody List<Battery> batteries) {
         return new ResponseEntity<>(batteryService.addBatteryInfo(batteries), new HttpHeaders(), HttpStatus.OK);
     }
 
     @GetMapping(value = "/get-info", produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public ResponseEntity<BatteriesWithinPostcodeRangeDto> getBatteryInfo(
+    public ResponseEntity<GetResponseDto> getBatteryInfo(
         @RequestParam(value = "postcodeLowVal") int postcodeLowerValue,
         @RequestParam(value = "postcodeHighVal") int postcodeHigherValue
     ) {
