@@ -1,5 +1,6 @@
-package com.example.batteries;
+package com.example.batteries.repositories;
 
+import com.example.batteries.entities.Battery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
