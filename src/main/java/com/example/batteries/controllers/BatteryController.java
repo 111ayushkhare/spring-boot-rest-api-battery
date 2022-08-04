@@ -20,6 +20,14 @@ public class BatteryController {
     @Autowired
     BatteryService batteryService;
 
+    /**
+     * This method is the endpoint for adding list of batteries
+     * Request body is in JSON format
+     * Returns JSON response
+     *
+     * @param batteries
+     * @return ResponseEntity with BatteryDto as response part
+     */
     @PostMapping(value = "/add-info", consumes = {"application/json"}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<List<BatteryDto>> addBattery(@RequestBody List<BatteryDto> batteries) {
@@ -36,6 +44,14 @@ public class BatteryController {
         }
     }
 
+    /**
+     * This method is the endpoint to get list of batteries within specified postcode range
+     * Returns JSON response
+     *
+     * @param postcodeLowerValue
+     * @param postcodeHigherValue
+     * @return list of batteries within specified postcode range
+     */
     @GetMapping(value = "/get-info", produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<GetResponseDto> getBatteryInfo(

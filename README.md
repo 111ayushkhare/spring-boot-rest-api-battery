@@ -4,6 +4,7 @@
 * This is a REST API developed using "spring boot" framework in JAVA language.
 * For interaction with the Database, Spring Data JPA is used.
 * Database - MYSQL
+* Caching is enabled - Recent get requests communicates with data in cache memory avoiding repeated interaction with database
 
 ### Endpoints :- 
 * /battery/add-info

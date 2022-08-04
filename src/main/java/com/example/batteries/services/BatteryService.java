@@ -21,6 +21,13 @@ public class BatteryService {
 
     private Logger logs = Logger.getLogger(BatteryService.class.getName());
 
+    /**
+     * This method communicates with batteryRepository and
+     * adds the list of batteries to the database
+     *
+     * @param batteries (list of Battery objects)
+     * @return Batteries saved to the database or null in error
+     */
     @CachePut(cacheNames = "cache_battery", key = "#batteries")
     public List<Battery> addBatteryInfo(List<Battery> batteries) {
         try {
@@ -39,6 +46,14 @@ public class BatteryService {
         }
     }
 
+    /**
+     * This method communicates with batteryRepository and
+     * retrieves list of batteries within specified postcode range
+     *
+     * @param postcodeLow
+     * @param postcodeHigh
+     * @return list of batteries within specified postcode range
+     */
     @Cacheable(cacheNames = "cache_battery", key = "{#postcodeLow, #postcodeHigh}")
     public GetResponseDto getBatteriesWithinPostcodeRange(int postcodeLow, int postcodeHigh) {
         try {
@@ -61,6 +76,7 @@ public class BatteryService {
         }
     }
 
+    // This method gets total watt capacity for the supplied list of batteries
     public static double getTotalWattCapacityWithinSpecifiedRange(List<Battery> batteries) {
         double totalWattCapacity = 0;
         for (Battery b: batteries) {
@@ -69,6 +85,7 @@ public class BatteryService {
         return totalWattCapacity;
     }
 
+    // This method gets average watt capacity for the supplied list of batteries
     public static double getAvgWattCapacityWithinSpecifiedRange(double totalWattCap, int n) {
         return n == 0 ? (double) 0 : totalWattCap / (double) n;
     }
