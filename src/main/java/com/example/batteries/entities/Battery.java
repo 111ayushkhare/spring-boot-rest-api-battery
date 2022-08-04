@@ -1,9 +1,6 @@
 package com.example.batteries.entities;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.lang.NonNull;
 
 import javax.persistence.*;
@@ -13,11 +10,12 @@ import javax.persistence.*;
 @Setter
 @NoArgsConstructor
 @RequiredArgsConstructor
+@AllArgsConstructor
 @Table(name = "Battery")
 public class Battery {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @NonNull

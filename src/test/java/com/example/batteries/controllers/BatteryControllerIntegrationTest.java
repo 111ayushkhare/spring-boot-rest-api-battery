@@ -3,15 +3,10 @@ package com.example.batteries.controllers;
 import com.example.batteries.dto.BatteriesWithinPostcodeRangeDto;
 import com.example.batteries.dto.BatteryDto;
 import com.example.batteries.dto.GetResponseDto;
-import com.example.batteries.dto.PostResponseDto;
 import com.example.batteries.entities.Battery;
-import com.example.batteries.repositories.BatteryRepository;
+import com.example.batteries.mapper.BatteryAndBatteryDtoMapper;
 import com.example.batteries.services.BatteryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,18 +17,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.json.simple.parser.JSONParser;
 
-import static junit.framework.Assert.assertEquals;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @WebMvcTest(BatteryController.class)
 class BatteryControllerIntegrationTest {
@@ -49,41 +41,47 @@ class BatteryControllerIntegrationTest {
     ObjectMapper mapper;
 
     @MockBean BatteryService batteryService;
-    //@MockBean BatteryRepository batteryRepository;
 
     @AfterEach
     void tearDown() {
     }
 
     @Test
-    void addBatteryErrZeroBatteries() throws Exception {
-        when(batteryService.addBatteryInfo(Collections.emptyList()))
-                .thenReturn(new PostResponseDto("No batteries added as empty request for fired !", Collections.emptyList(), (short) 400));
+    void addBatterySuccess() throws Exception {
+        List<Battery> b = getSampleBatteries();
+        List<BatteryDto> dto = BatteryAndBatteryDtoMapper.batteryToDto(b);
+
+        when(batteryService.addBatteryInfo(b)).thenReturn(b);
 
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-                .post(BASE_URL + "/add-info")
+                .post("/battery/add-info")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON);
+                .accept(MediaType.APPLICATION_JSON)
+                .content(this.mapper.writeValueAsBytes(dto));
+
+        mockMvc.perform(mockRequest)
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andReturn();
+    }
+
+    @Test
+    void addBatteryErrZeroBatteries() throws Exception {
+        List<Battery> b = getSampleBatteries();
+        List<BatteryDto> dto = BatteryAndBatteryDtoMapper.batteryToDto(b);
+
+        when(batteryService.addBatteryInfo(Collections.emptyList())).thenReturn(Collections.emptyList());
+
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/battery/add-info")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(this.mapper.writeValueAsBytes(Collections.emptyList()));
 
         mockMvc.perform(mockRequest)
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andReturn();
     }
-
-    @Test
-    void addBatteryErrRepeatedBattery() throws Exception {
-        when(batteryService.addBatteryInfo(getSampleRepeatedBatteries()))
-                .thenReturn(new PostResponseDto(
-                        "could not execute statement; SQL [n/a]; constraint [battery.UK_lvm1k696hw3f4elq3831ygeal]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
-                        Collections.emptyList(),
-                        (short) 415));
-
-        mockMvc.perform(post(BASE_URL + "/add-info"))
-                .andDo(print())
-                .andExpect(status().isUnsupportedMediaType());
-    }
-
 
     @Test
     void getBatteryInfoSuccess() throws Exception {
@@ -118,7 +116,7 @@ class BatteryControllerIntegrationTest {
         int postcodeHighVal = 1009;
 
         when(batteryService.getBatteriesWithinPostcodeRange(postcodeLowVal, postcodeHighVal))
-                .thenReturn(new GetResponseDto("No batteries found within specified postcode range !", null, (short) 200));
+                .thenReturn(new GetResponseDto("No batteries found within specified postcode range !", null, (short) 404));
 
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
                 .get(BASE_URL + "/get-info")
@@ -128,7 +126,7 @@ class BatteryControllerIntegrationTest {
 
         mockMvc.perform(mockRequest)
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andReturn();
     }
 
@@ -155,22 +153,14 @@ class BatteryControllerIntegrationTest {
 
     private List<Battery> getSampleBatteries() {
         return new ArrayList<>(){{
-            add(new Battery("BT100", 665500, 400.5));
-            add(new Battery("BT101", 665501, 401.5));
-            add(new Battery("BT102", 665502, 402.5));
-            add(new Battery("BT103", 665503, 403.5));
-            add(new Battery("BT104", 665504, 404.5));
-            add(new Battery("BT105", 665505, 405.5));
-            add(new Battery("BT106", 665506, 406.5));
-            add(new Battery("BT107", 665507, 407.5));
-        }};
-    }
-    private List<Battery> getSampleRepeatedBatteries() {
-        return new ArrayList<>(){{
-            add(new Battery("BT108", 665508, 400.5));
-            add(new Battery("BT109", 665509, 401.5));
-            add(new Battery("BT109", 665509, 409.5));
-            add(new Battery("BT110", 665510, 410.5));
+            add(new Battery("BT110", 665500, 400.5));
+            add(new Battery("BT121", 665501, 401.5));
+            add(new Battery("BT132", 665502, 402.5));
+            add(new Battery("BT143", 665503, 403.5));
+            add(new Battery("BT154", 665504, 404.5));
+            add(new Battery("BT165", 665505, 405.5));
+            add(new Battery("BT176", 665506, 406.5));
+            add(new Battery("BT187", 665507, 407.5));
         }};
     }
 }

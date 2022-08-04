@@ -1,9 +1,7 @@
 package com.example.batteries.services;
 
 import com.example.batteries.dto.BatteriesWithinPostcodeRangeDto;
-import com.example.batteries.dto.BatteryDto;
 import com.example.batteries.dto.GetResponseDto;
-import com.example.batteries.dto.PostResponseDto;
 import com.example.batteries.entities.Battery;
 import com.example.batteries.repositories.BatteryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +9,8 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Logger;
 
 @Service
@@ -23,26 +22,20 @@ public class BatteryService {
     private Logger logs = Logger.getLogger(BatteryService.class.getName());
 
     @CachePut(cacheNames = "cache_battery", key = "#batteries")
-    public PostResponseDto addBatteryInfo(List<Battery> batteries) {
+    public List<Battery> addBatteryInfo(List<Battery> batteries) {
         try {
-            List<Battery> savedBatteries = new ArrayList<>();
-            batteryRepository.saveAll(batteries).iterator().forEachRemaining(savedBatteries::add);
+            List<Battery> savedBatteries = batteryRepository.saveAll(batteries);
 
-            List<BatteryDto> createdBatteries = new ArrayList<>();
-            for (Battery battery: savedBatteries) {
-                createdBatteries.add(new BatteryDto(battery.getId(), battery.getName(), battery.getPostcode(), battery.getWattCapacity()));
-            }
-
-            if (createdBatteries.isEmpty()) {
+            if (savedBatteries.isEmpty()) {
                 logs.info("No batteries added as empty request for fired...");
-                return new PostResponseDto("No batteries added as empty request for fired !", createdBatteries, (short) 400);
             } else {
                 logs.info("Batteries are added in the MYSQL database...");
-                return new PostResponseDto("Batteries added successfully !", createdBatteries, (short) 201);
             }
+
+            return savedBatteries;
         } catch (Exception e) {
             logs.info(e.getMessage());
-            return new PostResponseDto(e.getMessage(), Collections.emptyList(), (short) 415);
+            return null;
         }
     }
 
