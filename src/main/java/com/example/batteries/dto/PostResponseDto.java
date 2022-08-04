@@ -14,7 +14,7 @@ public class PostResponseDto {
 
     public PostResponseDto(String message, List<BatteryDto> batteries, short statusCode) {
         this.message = message;
-        this.batteries = batteries.isEmpty() ? null : batteries;
+        this.batteries = batteries;
         this.statusCode = statusCode;
     }
 }

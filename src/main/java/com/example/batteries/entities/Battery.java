@@ -17,7 +17,7 @@ import javax.persistence.*;
 public class Battery {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     private long id;
 
     @NonNull
