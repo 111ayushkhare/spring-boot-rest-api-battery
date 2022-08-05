@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BatteriesWithinPostcodeRangeDto {
+public class BatteriesInPostcodeDto {
     private List<Battery> batteries;
     private double totalWattCapacity, avgWattCapacity;
 }

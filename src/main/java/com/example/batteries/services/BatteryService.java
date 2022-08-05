@@ -1,7 +1,7 @@
 package com.example.batteries.services;
 
-import com.example.batteries.dto.BatteriesWithinPostcodeRangeDto;
-import com.example.batteries.dto.GetResponseDto;
+import com.example.batteries.dto.BatteriesInPostcodeDto;
+import com.example.batteries.dto.BatteryResponseDto;
 import com.example.batteries.entities.Battery;
 import com.example.batteries.repositories.BatteryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,24 +55,24 @@ public class BatteryService {
      * @return list of batteries within specified postcode range
      */
     @Cacheable(cacheNames = "cache_battery", key = "{#postcodeLow, #postcodeHigh}")
-    public GetResponseDto getBatteriesWithinPostcodeRange(int postcodeLow, int postcodeHigh) {
+    public BatteryResponseDto getBatteriesWithinPostcodeRange(int postcodeLow, int postcodeHigh) {
         try {
             List<Battery> l = batteryRepository.findAllBatteriesWithinSpecifiedPostcodeRange(postcodeLow, postcodeHigh);
 
             if (l.isEmpty()) {
                 logs.info("No batteries found within specified postcode range...");
-                return new GetResponseDto("No batteries found within specified postcode range !", null, (short) 404);
+                return new BatteryResponseDto("No batteries found within specified postcode range !", null, (short) 404);
             } else {
                 l.sort(Comparator.comparing(Battery::getName));
                 double totalWattCapacity = getTotalWattCapacityWithinSpecifiedRange(l);
 
                 logs.info("Batteries within specified postcode range are fetched...");
-                return new GetResponseDto("Batteries within specified postcode range are fetched successfully !", new BatteriesWithinPostcodeRangeDto(l, totalWattCapacity, getAvgWattCapacityWithinSpecifiedRange(totalWattCapacity, l.size())), (short) 200);
+                return new BatteryResponseDto("Batteries within specified postcode range are fetched successfully !", new BatteriesInPostcodeDto(l, totalWattCapacity, getAvgWattCapacityWithinSpecifiedRange(totalWattCapacity, l.size())), (short) 200);
             }
 
         } catch (Exception e) {
             logs.info(e.getMessage());
-            return new GetResponseDto(e.getMessage(), null, (short) 404);
+            return new BatteryResponseDto(e.getMessage(), null, (short) 404);
         }
     }
 

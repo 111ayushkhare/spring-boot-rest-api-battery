@@ -7,16 +7,11 @@
 * Caching is enabled - Recent get requests communicates with data in cache memory avoiding repeated interaction with database
 
 ### Endpoints :- 
-* /battery/add-info
-  * Request type - POST
-  * Request body - JSON data
-  * This end point expects list of batteries (with name, postcode & watt_capacity of each)
-* /battery/get-info
-  * Request type - GET
-  * Requires parameters - 
-    * postcodeLowVal - from postcode
-    * postcodeHighVal - to postcode
-  * final_url - /battery/get-info?postcodeLowVal=2233&postcodeLowVal=2239
+
+| Route                                                                 | Method | Parameters | Body                                                                                                                                                                                                           | Description                                                                                                                                                                                                  |
+|-----------------------------------------------------------------------| ------ |----------- |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| /battery/add-info                                                     | POST | - | ```[{"name":"batt1", "postcode": 444001, "wattCapacity": 333.45}, {...}, {...}, ..]```                                                                                                                         | This API endpoint expects list of batteries and adds them to the database.                                                                                                                                   |
+| /battery/get-info?postcodeLowVal=int_value1&postcodeLowVal=int_value2 | GET | postcodeLowVal, postcodeHighVal | - | This API endpoint asks for batteries within supplied postcode range (postcodeLowVal - from postcode and postcodeHighVal - to postcode) along with total and average watt capacities of the fetched batteries |
 
 ### Authentication :-
 As per the challenge, the above two mentioned endpoints can be accessed by anyone who runs this Spring Boot server, i.e., 

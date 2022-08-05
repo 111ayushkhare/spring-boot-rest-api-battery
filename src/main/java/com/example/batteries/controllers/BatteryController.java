@@ -1,7 +1,7 @@
 package com.example.batteries.controllers;
 
 import com.example.batteries.dto.BatteryDto;
-import com.example.batteries.dto.GetResponseDto;
+import com.example.batteries.dto.BatteryResponseDto;
 import com.example.batteries.entities.Battery;
 import com.example.batteries.mapper.BatteryDtoMapper;
 import com.example.batteries.services.BatteryService;
@@ -32,16 +32,21 @@ public class BatteryController {
     @PostMapping(value = "/add-info", consumes = {"application/json"}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<List<BatteryDto>> addBattery(@RequestBody List<BatteryDto> batteries) {
+
         try {
+            // Start: This conversion can be moved to business logic
             List<Battery> batteryList = batteries.stream()
                     .map(batteryDto -> BatteryDtoMapper.map(batteryDto))
                     .collect(Collectors.toList());
+            // End
 
             List<Battery> savedBatteries = batteryService.addBatteryInfo(batteryList);
 
+            // Start: This conversion can be moved to business logic
             List<BatteryDto> batteryDto = savedBatteries.stream()
                     .map(battery -> BatteryDtoMapper.map(battery))
                     .collect(Collectors.toList());
+            // End
 
             if (savedBatteries == null) {
                 throw new Exception();
@@ -62,11 +67,11 @@ public class BatteryController {
      */
     @GetMapping(value = "/get-info", produces = {"application/json"})
     @ResponseBody
-    public ResponseEntity<GetResponseDto> getBatteryInfo(
+    public ResponseEntity<BatteryResponseDto> getBatteryInfo(
         @RequestParam(value = "postcodeLowVal", defaultValue = "0") int postcodeLowerValue,
         @RequestParam(value = "postcodeHighVal", defaultValue = "0") int postcodeHigherValue
     ) {
-        GetResponseDto getResponseDto = batteryService.getBatteriesWithinPostcodeRange(postcodeLowerValue, postcodeHigherValue);
+        BatteryResponseDto getResponseDto = batteryService.getBatteriesWithinPostcodeRange(postcodeLowerValue, postcodeHigherValue);
         return new ResponseEntity<>(getResponseDto, new HttpHeaders(), getResponseDto.getStatusCode());
     }
 

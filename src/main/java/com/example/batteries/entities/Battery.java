@@ -5,6 +5,7 @@ import org.springframework.lang.NonNull;
 
 import javax.persistence.*;
 
+// Using 'lombok' Annotation to implicitly generate Constructors, Getters & Setters
 @Entity
 @Data
 @Getter

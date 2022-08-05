@@ -1,8 +1,8 @@
 package com.example.batteries.controllers;
 
-import com.example.batteries.dto.BatteriesWithinPostcodeRangeDto;
+import com.example.batteries.dto.BatteriesInPostcodeDto;
 import com.example.batteries.dto.BatteryDto;
-import com.example.batteries.dto.GetResponseDto;
+import com.example.batteries.dto.BatteryResponseDto;
 import com.example.batteries.entities.Battery;
 import com.example.batteries.mapper.BatteryDtoMapper;
 import com.example.batteries.services.BatteryService;
@@ -47,6 +47,74 @@ class BatteryControllerIntegrationTest {
     }
 
     @Test
+    void getBatteryInfoSuccess() throws Exception {
+        int postcodeLowVal = 665502;
+        int postcodeHighVal = 665505;
+
+        List<Battery> sampleBatteries = getSampleBatteries();
+        sampleBatteries.sort(Comparator.comparing(Battery::getName));
+        double totalWattCapacity = BatteryService.getTotalWattCapacityWithinSpecifiedRange(sampleBatteries);
+
+        when(batteryService.getBatteriesWithinPostcodeRange(postcodeLowVal, postcodeHighVal))
+                .thenReturn(new BatteryResponseDto(
+                        "Batteries within specified postcode range are fetched successfully !",
+                        new BatteriesInPostcodeDto(sampleBatteries, totalWattCapacity, BatteryService.getAvgWattCapacityWithinSpecifiedRange(totalWattCapacity, sampleBatteries.size())),
+                        (short) 200));
+
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .get(BASE_URL + "/get-info")
+                .param("postcodeLowVal", Integer.toString(postcodeLowVal))
+                .param("postcodeHighVal", Integer.toString(postcodeHighVal))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(mockRequest)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    void getBatteryInfoErrZeroBatteriesInSpecifiedRange() throws Exception {
+        int postcodeLowVal = 1020;
+        int postcodeHighVal = 1009;
+
+        when(batteryService.getBatteriesWithinPostcodeRange(postcodeLowVal, postcodeHighVal))
+                .thenReturn(new BatteryResponseDto("No batteries found within specified postcode range !", null, (short) 404));
+
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .get(BASE_URL + "/get-info")
+                .param("postcodeLowVal", Integer.toString(postcodeLowVal))
+                .param("postcodeHighVal", Integer.toString(postcodeHighVal))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(mockRequest)
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andReturn();
+    }
+
+    @Test
+    void getBatteryInfoErrNoParameterPassed() throws Exception {
+        int postcodeLowVal = 0;
+        int postcodeHighVal = 0;
+
+        when(batteryService.getBatteriesWithinPostcodeRange(postcodeLowVal, postcodeHighVal))
+                .thenReturn(new BatteryResponseDto("No batteries found within specified postcode range !", null, (short) 400));
+
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .get(BASE_URL + "/get-info")
+                .param("postcodeLowVal", Integer.toString(postcodeLowVal))
+                .param("postcodeHighVal", Integer.toString(postcodeHighVal))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(mockRequest)
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn();
+    }
+
+
+    @Test
     void addBatterySuccess() throws Exception {
         List<Battery> b = getSampleBatteries();
 
@@ -85,73 +153,6 @@ class BatteryControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(this.mapper.writeValueAsBytes(Collections.emptyList()));
-
-        mockMvc.perform(mockRequest)
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andReturn();
-    }
-
-    @Test
-    void getBatteryInfoSuccess() throws Exception {
-        int postcodeLowVal = 665502;
-        int postcodeHighVal = 665505;
-
-        List<Battery> sampleBatteries = getSampleBatteries();
-        sampleBatteries.sort(Comparator.comparing(Battery::getName));
-        double totalWattCapacity = BatteryService.getTotalWattCapacityWithinSpecifiedRange(sampleBatteries);
-
-        when(batteryService.getBatteriesWithinPostcodeRange(postcodeLowVal, postcodeHighVal))
-                .thenReturn(new GetResponseDto(
-                        "Batteries within specified postcode range are fetched successfully !",
-                        new BatteriesWithinPostcodeRangeDto(sampleBatteries, totalWattCapacity, BatteryService.getAvgWattCapacityWithinSpecifiedRange(totalWattCapacity, sampleBatteries.size())),
-                        (short) 200));
-
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-                .get(BASE_URL + "/get-info")
-                .param("postcodeLowVal", Integer.toString(postcodeLowVal))
-                .param("postcodeHighVal", Integer.toString(postcodeHighVal))
-                .contentType(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(mockRequest)
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andReturn();
-    }
-
-    @Test
-    void getBatteryInfoErrZeroBatteriesInSpecifiedRange() throws Exception {
-        int postcodeLowVal = 1020;
-        int postcodeHighVal = 1009;
-
-        when(batteryService.getBatteriesWithinPostcodeRange(postcodeLowVal, postcodeHighVal))
-                .thenReturn(new GetResponseDto("No batteries found within specified postcode range !", null, (short) 404));
-
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-                .get(BASE_URL + "/get-info")
-                .param("postcodeLowVal", Integer.toString(postcodeLowVal))
-                .param("postcodeHighVal", Integer.toString(postcodeHighVal))
-                .contentType(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(mockRequest)
-                .andDo(print())
-                .andExpect(status().isNotFound())
-                .andReturn();
-    }
-
-    @Test
-    void getBatteryInfoErrNoParameterPassed() throws Exception {
-        int postcodeLowVal = 0;
-        int postcodeHighVal = 0;
-
-        when(batteryService.getBatteriesWithinPostcodeRange(postcodeLowVal, postcodeHighVal))
-                .thenReturn(new GetResponseDto("No batteries found within specified postcode range !", null, (short) 400));
-
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-                .get(BASE_URL + "/get-info")
-                .param("postcodeLowVal", Integer.toString(postcodeLowVal))
-                .param("postcodeHighVal", Integer.toString(postcodeHighVal))
-                .contentType(MediaType.APPLICATION_JSON);
 
         mockMvc.perform(mockRequest)
                 .andDo(print())
