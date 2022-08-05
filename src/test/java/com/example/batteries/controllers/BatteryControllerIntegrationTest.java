@@ -4,7 +4,7 @@ import com.example.batteries.dto.BatteriesWithinPostcodeRangeDto;
 import com.example.batteries.dto.BatteryDto;
 import com.example.batteries.dto.GetResponseDto;
 import com.example.batteries.entities.Battery;
-import com.example.batteries.mapper.BatteryAndBatteryDtoMapper;
+import com.example.batteries.mapper.BatteryDtoMapper;
 import com.example.batteries.services.BatteryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @WebMvcTest(BatteryController.class)
 class BatteryControllerIntegrationTest {
@@ -49,15 +49,26 @@ class BatteryControllerIntegrationTest {
     @Test
     void addBatterySuccess() throws Exception {
         List<Battery> b = getSampleBatteries();
-        List<BatteryDto> dto = BatteryAndBatteryDtoMapper.batteryToDto(b);
 
-        when(batteryService.addBatteryInfo(b)).thenReturn(b);
+        List<Battery> batteriesWithNullIds = b.stream().map(battery -> Battery.builder()
+                        .id(null)
+                        .name(battery.getName())
+                        .postcode(battery.getPostcode())
+                        .wattCapacity(battery.getWattCapacity())
+                        .build())
+                .collect(Collectors.toList());
+
+        List<BatteryDto> dto = b.stream()
+                .map(battery -> BatteryDtoMapper.map(battery))
+                .collect(Collectors.toList());
+
+        when(batteryService.addBatteryInfo(batteriesWithNullIds)).thenReturn(b);
 
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
                 .post("/battery/add-info")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(this.mapper.writeValueAsBytes(dto));
+                .content(this.mapper.writeValueAsString(dto));
 
         mockMvc.perform(mockRequest)
                 .andDo(print())
@@ -67,8 +78,6 @@ class BatteryControllerIntegrationTest {
 
     @Test
     void addBatteryErrZeroBatteries() throws Exception {
-        List<Battery> b = getSampleBatteries();
-        List<BatteryDto> dto = BatteryAndBatteryDtoMapper.batteryToDto(b);
 
         when(batteryService.addBatteryInfo(Collections.emptyList())).thenReturn(Collections.emptyList());
 
@@ -153,14 +162,14 @@ class BatteryControllerIntegrationTest {
 
     private List<Battery> getSampleBatteries() {
         return new ArrayList<>(){{
-            add(new Battery("BT110", 665500, 400.5));
-            add(new Battery("BT121", 665501, 401.5));
-            add(new Battery("BT132", 665502, 402.5));
-            add(new Battery("BT143", 665503, 403.5));
-            add(new Battery("BT154", 665504, 404.5));
-            add(new Battery("BT165", 665505, 405.5));
-            add(new Battery("BT176", 665506, 406.5));
-            add(new Battery("BT187", 665507, 407.5));
+            add(new Battery(1l,"BT110", 665500, 400.5));
+            add(new Battery(2l,"BT121", 665501, 401.5));
+            add(new Battery(3l, "BT132", 665502, 402.5));
+            add(new Battery(4l, "BT143", 665503, 403.5));
+            add(new Battery(5l,"BT154", 665504, 404.5));
+            add(new Battery(6l,"BT165", 665505, 405.5));
+            add(new Battery(7l,"BT176", 665506, 406.5));
+            add(new Battery(8l,"BT187", 665507, 407.5));
         }};
     }
 }

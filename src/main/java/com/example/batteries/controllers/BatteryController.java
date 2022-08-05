@@ -3,7 +3,7 @@ package com.example.batteries.controllers;
 import com.example.batteries.dto.BatteryDto;
 import com.example.batteries.dto.GetResponseDto;
 import com.example.batteries.entities.Battery;
-import com.example.batteries.mapper.BatteryAndBatteryDtoMapper;
+import com.example.batteries.mapper.BatteryDtoMapper;
 import com.example.batteries.services.BatteryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/battery")
@@ -32,13 +33,20 @@ public class BatteryController {
     @ResponseBody
     public ResponseEntity<List<BatteryDto>> addBattery(@RequestBody List<BatteryDto> batteries) {
         try {
-            List<Battery> batteryList = BatteryAndBatteryDtoMapper.dtoToBattery(batteries);
+            List<Battery> batteryList = batteries.stream()
+                    .map(batteryDto -> BatteryDtoMapper.map(batteryDto))
+                    .collect(Collectors.toList());
+
             List<Battery> savedBatteries = batteryService.addBatteryInfo(batteryList);
+
+            List<BatteryDto> batteryDto = savedBatteries.stream()
+                    .map(battery -> BatteryDtoMapper.map(battery))
+                    .collect(Collectors.toList());
 
             if (savedBatteries == null) {
                 throw new Exception();
             }
-            return new ResponseEntity<>(BatteryAndBatteryDtoMapper.batteryToDto(savedBatteries), new HttpHeaders(), savedBatteries.isEmpty() ? HttpStatus.BAD_REQUEST : HttpStatus.CREATED);
+            return new ResponseEntity<>(batteryDto, new HttpHeaders(), savedBatteries.isEmpty() ? HttpStatus.BAD_REQUEST : HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, new HttpHeaders(), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
         }

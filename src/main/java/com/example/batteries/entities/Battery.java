@@ -6,17 +6,19 @@ import org.springframework.lang.NonNull;
 import javax.persistence.*;
 
 @Entity
+@Data
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
-@RequiredArgsConstructor
 @AllArgsConstructor
+@RequiredArgsConstructor
 @Table(name = "Battery")
 public class Battery {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @NonNull
     @Column (unique = true)
